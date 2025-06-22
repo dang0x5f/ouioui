@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
+#include <stddef.h>
 #include <X11/Xlib.h>
+
+#define OO_BTTN_IMPLEMENTATION
+#include "oo_bttn.h"
 
 int main(void)
 {
