@@ -7,20 +7,24 @@ static long def_valuemask =
 );
 static long def_eventmask = 
 (
-    KeyPressMask|EnterWindowMask|LeaveWindowMask
+    KeyPressMask|EnterWindowMask|LeaveWindowMask|ExposureMask|SubstructureNotifyMask
 );
 
 typedef struct {
     Window win;
     GC gc;
+    int width;
+    int height;
     int x;
     int y;
     char *label;
     size_t label_len;
 } oo_button;
 
-void create_button(Display*,Window*,int,XFontStruct*);
-void draw_button(Display*,oo_button*);
+void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int);
+void expose_button(oo_button*,XEvent*);
+void config_button(oo_button*,XEvent*);
+void enter_button(oo_button*,XEvent*);
 
 #endif // OO_BTTN_H
 
@@ -29,7 +33,8 @@ void draw_button(Display*,oo_button*);
 // oo_button 
 void
 create_button(Display *display, Window *parent, int screen_num, 
-              XFontStruct *font)
+              XFontStruct *font, XContext context, int x, int y,
+              int width, int height)
 {
     int depth = DefaultDepth(display,screen_num);
     int class = InputOutput;
@@ -41,11 +46,44 @@ create_button(Display *display, Window *parent, int screen_num,
         .event_mask = def_eventmask,
     };
 
-    Window subwin = XCreateWindow(display,*parent,0,0,100,20,2, depth,
+    Window subwin = XCreateWindow(display,*parent,x,y,width,height,2, depth,
                                   class,visual,valuemask,&attributes);
-    XSetFont(display,DefaultGC(display,screen_num),font->fid);
-    XDrawString(display,subwin,DefaultGC(display,screen_num),0,0,"Button",6);
+
+    // XSetFont(display,DefaultGC(display,screen_num),font->fid);
+
+    oo_button *button = malloc(sizeof(oo_button)); 
+
+    button->width = width;
+    button->height = height;
+    button->x = x;
+    button->y = y;
+    button->label = "Button1";
+    button->label_len = 7;
+
+    XSaveContext(display,subwin,context,(XPointer)button);
     XMapWindow(display,subwin);
+}
+
+void expose_button(oo_button *button, XEvent *event)
+{
+    XDrawString(event->xany.display, event->xany.window,
+                DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
+                button->x+10, button->y+10, button->label, button->label_len);
+}
+
+void config_button(oo_button *button, XEvent *event)
+{
+    XClearWindow(event->xany.display, event->xany.window);
+}
+
+void enter_button(oo_button *button, XEvent *event)
+{
+    XSetWindowAttributes attributes;
+    attributes.background_pixel = 0x000000;
+    XChangeWindowAttributes(event->xany.display, event->xany.window,
+                            CWBackPixel, &attributes);
+    XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
+               button->height, True);
 }
 
 #endif // OO_BTTN_IMPLEMENTATION

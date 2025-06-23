@@ -3,6 +3,8 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/Xresource.h>
 
 #define OO_BTTN_IMPLEMENTATION
 #include "oo_bttn.h"
@@ -19,6 +21,8 @@ void font_setup(Display *display)
 
 int main(void)
 {
+    /* XrmInitialize(); */
+
     Display *display = XOpenDisplay(NULL);
     int screen_num = DefaultScreen(display);
     Window root = DefaultRootWindow(display);
@@ -30,26 +34,34 @@ int main(void)
     valuemask |= CWEventMask;
     XSetWindowAttributes attributes = {
         .background_pixel = 0xccccdd,
-        .event_mask = KeyPressMask|EnterWindowMask|LeaveWindowMask,
+        .event_mask = ExposureMask|SubstructureNotifyMask,
     };
+    XContext context = XUniqueContext();
 
     Window window = XCreateWindow(display, root, 0, 0, 400, 300, 5, 
                         depth, class, visual, valuemask, &attributes);
 
     font_setup(display);
 
-    create_button(display,&window,screen_num,font_info);
+    create_button(display,&window,screen_num,font_info,context,0,0,100,20);
 
     XMapWindow(display,window);
     XSync(display,false);
+
     XEvent event;
     while(1){
-        /* oo_button *button = NULL; */
+        oo_button *button = NULL;
         XNextEvent(display,&event);
+        XFindContext(event.xany.display, event.xany.window, 
+                     context, (XPointer*)&button);
         switch(event.type){
-            /* case Expose: */
-            /*     if(button) button_expose(button,&event); */
-            /*     break; */
+            case ConfigureNotify:
+                if(button) config_button(button,&event);
+            case Expose:
+                if(button) expose_button(button,&event);
+                break;
+            case EnterNotify:
+                if(button) enter_button(button,&event);
         }
         if(event.xkey.keycode == 9) break;
     }
