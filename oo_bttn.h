@@ -55,8 +55,9 @@ create_button(Display *display, Window *parent, int screen_num,
 
     button->width = width;
     button->height = height;
-    button->x = x;
-    button->y = y;
+    // TODO 7 is length of string
+    button->x = x + (width/2)-((font->per_char->width * 7)/2);
+    button->y = y + (font->ascent+font->descent);
     button->label = "Button1";
     button->label_len = 7;
 
@@ -68,7 +69,7 @@ void expose_button(oo_button *button, XEvent *event)
 {
     XDrawString(event->xany.display, event->xany.window,
                 DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
-                button->x+10, button->y+10, button->label, button->label_len);
+                button->x, button->y, button->label, button->label_len);
 }
 
 void config_button(oo_button *button, XEvent *event)
