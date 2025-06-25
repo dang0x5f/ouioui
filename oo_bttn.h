@@ -23,7 +23,7 @@ typedef struct {
     size_t label_len;
 } oo_button;
 
-void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int,unsigned long,unsigned long);
+void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int,int,int,char*,size_t);
 void expose_button(oo_button*,XEvent*);
 void config_button(oo_button*,XEvent*);
 void enter_button(oo_button*,XEvent*);
@@ -37,7 +37,8 @@ void leave_button(oo_button*,XEvent*);
 void
 create_button(Display *display, Window *parent, int screen_num, 
               XFontStruct *font, XContext context, int x, int y,
-              int width, int height, unsigned long border, unsigned long background)
+              int width, int height, int border, int background,
+              char *label, size_t label_len)
 {
     int depth = DefaultDepth(display,screen_num);
     int class = InputOutput;
@@ -60,11 +61,11 @@ create_button(Display *display, Window *parent, int screen_num,
     button->border = border;
     button->width = width;
     button->height = height;
-    // TODO 7 is length of string
-    button->x = x + (width/2)-((font->per_char->width * 7)/2);
-    button->y = y + (font->ascent+font->descent);
-    button->label = "Button1";
-    button->label_len = 7;
+    button->x = (width/2)-((font->per_char->width * label_len)/2);
+    button->y = (font->ascent+font->descent);
+    button->label_len = label_len;
+    button->label = malloc(label_len+1);
+    button->label = label;
 
     XSaveContext(display,subwin,context,(XPointer)button);
     XMapWindow(display,subwin);

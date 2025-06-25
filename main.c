@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include <stddef.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
@@ -42,8 +43,10 @@ int main(void)
                         depth, class, visual, valuemask, &attributes);
 
     font_setup(display);
+    char *l = "SAI ZON ZEE";
+    create_button(display,&window,screen_num,font_info,context,0,0,100,20,0x776677,0xbbbbbb,l,strlen(l));
 
-    create_button(display,&window,screen_num,font_info,context,0,0,100,20,0x776677,0xbbbbbb);
+    create_button(display,&window,screen_num,font_info,context,0,25,100,20,0x333333,0xbbbbbb,l,strlen(l));
 
     XMapWindow(display,window);
     XSync(display,false);
