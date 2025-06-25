@@ -25,6 +25,7 @@ void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int);
 void expose_button(oo_button*,XEvent*);
 void config_button(oo_button*,XEvent*);
 void enter_button(oo_button*,XEvent*);
+void leave_button(oo_button*,XEvent*);
 
 #endif // OO_BTTN_H
 
@@ -80,7 +81,17 @@ void config_button(oo_button *button, XEvent *event)
 void enter_button(oo_button *button, XEvent *event)
 {
     XSetWindowAttributes attributes;
-    attributes.background_pixel = 0x000000;
+    attributes.background_pixel = 0xfffdd0;
+    XChangeWindowAttributes(event->xany.display, event->xany.window,
+                            CWBackPixel, &attributes);
+    XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
+               button->height, True);
+}
+
+void leave_button(oo_button *button, XEvent *event)
+{
+    XSetWindowAttributes attributes;
+    attributes.background_pixel = 0xbbbbbb;
     XChangeWindowAttributes(event->xany.display, event->xany.window,
                             CWBackPixel, &attributes);
     XClearArea(event->xany.display, event->xany.window, 0,0, button->width,

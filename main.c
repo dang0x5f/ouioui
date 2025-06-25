@@ -22,6 +22,7 @@ void font_setup(Display *display)
 int main(void)
 {
     /* XrmInitialize(); */
+    XContext context = XUniqueContext();
 
     Display *display = XOpenDisplay(NULL);
     int screen_num = DefaultScreen(display);
@@ -34,9 +35,8 @@ int main(void)
     valuemask |= CWEventMask;
     XSetWindowAttributes attributes = {
         .background_pixel = 0xccccdd,
-        .event_mask = ExposureMask|SubstructureNotifyMask,
+        .event_mask = KeyPressMask|ExposureMask|SubstructureNotifyMask,
     };
-    XContext context = XUniqueContext();
 
     Window window = XCreateWindow(display, root, 0, 0, 400, 300, 5, 
                         depth, class, visual, valuemask, &attributes);
@@ -57,11 +57,16 @@ int main(void)
         switch(event.type){
             case ConfigureNotify:
                 if(button) config_button(button,&event);
+                break;
             case Expose:
                 if(button) expose_button(button,&event);
                 break;
             case EnterNotify:
                 if(button) enter_button(button,&event);
+                break;
+            case LeaveNotify:
+                if(button) leave_button(button,&event);
+                break;
         }
         if(event.xkey.keycode == 9) break;
     }
