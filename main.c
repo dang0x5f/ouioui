@@ -43,7 +43,7 @@ int main(void)
 
     font_setup(display);
 
-    create_button(display,&window,screen_num,font_info,context,0,0,100,20);
+    create_button(display,&window,screen_num,font_info,context,0,0,100,20,0x776677,0xbbbbbb);
 
     XMapWindow(display,window);
     XSync(display,false);

@@ -13,6 +13,8 @@ static long def_eventmask =
 typedef struct {
     Window win;
     GC gc;
+    int background;
+    int border;
     int width;
     int height;
     int x;
@@ -21,7 +23,7 @@ typedef struct {
     size_t label_len;
 } oo_button;
 
-void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int);
+void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int,unsigned long,unsigned long);
 void expose_button(oo_button*,XEvent*);
 void config_button(oo_button*,XEvent*);
 void enter_button(oo_button*,XEvent*);
@@ -35,15 +37,15 @@ void leave_button(oo_button*,XEvent*);
 void
 create_button(Display *display, Window *parent, int screen_num, 
               XFontStruct *font, XContext context, int x, int y,
-              int width, int height)
+              int width, int height, unsigned long border, unsigned long background)
 {
     int depth = DefaultDepth(display,screen_num);
     int class = InputOutput;
     Visual *visual = DefaultVisual(display,screen_num);
     int valuemask = def_valuemask;
     XSetWindowAttributes attributes = {
-        .background_pixel = 0xbbbbbb,
-        .border_pixel = 0x666666,
+        .background_pixel = background,
+        .border_pixel = border,
         .event_mask = def_eventmask,
     };
 
@@ -54,6 +56,8 @@ create_button(Display *display, Window *parent, int screen_num,
 
     oo_button *button = malloc(sizeof(oo_button)); 
 
+    button->background = background;
+    button->border = border;
     button->width = width;
     button->height = height;
     // TODO 7 is length of string
@@ -81,9 +85,10 @@ void config_button(oo_button *button, XEvent *event)
 void enter_button(oo_button *button, XEvent *event)
 {
     XSetWindowAttributes attributes;
-    attributes.background_pixel = 0xfffdd0;
+    attributes.background_pixel = button->border;
+    attributes.border_pixel = button->background;
     XChangeWindowAttributes(event->xany.display, event->xany.window,
-                            CWBackPixel, &attributes);
+                            CWBackPixel|CWBorderPixel, &attributes);
     XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
                button->height, True);
 }
@@ -91,9 +96,10 @@ void enter_button(oo_button *button, XEvent *event)
 void leave_button(oo_button *button, XEvent *event)
 {
     XSetWindowAttributes attributes;
-    attributes.background_pixel = 0xbbbbbb;
+    attributes.background_pixel = button->background;
+    attributes.border_pixel = button->border;
     XChangeWindowAttributes(event->xany.display, event->xany.window,
-                            CWBackPixel, &attributes);
+                            CWBackPixel|CWBorderPixel, &attributes);
     XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
                button->height, True);
 }
