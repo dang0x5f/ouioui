@@ -4,8 +4,9 @@
 #include <string.h>
 #include <stddef.h>
 #include <X11/Xlib.h>
-#include <X11/Xutil.h>
+/* #include <X11/Xutil.h> */
 #include <X11/Xresource.h>
+#include <X11/Xft/Xft.h>
 
 #define OO_BTTN_IMPLEMENTATION
 #include "oo_bttn.h"
@@ -18,6 +19,17 @@ void font_setup(Display *display)
     font_info = XLoadQueryFont(display,font_name);
     if(!font_info) 
         exit(-1);
+}
+
+char *font_pattern = "Deja Vu Sans Mono:weight=bold:size=8";
+XftFont *xftfont;
+void xftfont_setup(Display *display, int screen_num)
+{
+    xftfont = XftFontOpenName(display,screen_num,font_pattern);
+    if(!xftfont){
+        perror("XftFontOpenName() error\n");
+        exit(EXIT_FAILURE);
+    }
 }
 
 int main(void)
@@ -38,15 +50,19 @@ int main(void)
         .background_pixel = 0xccccdd,
         .event_mask = KeyPressMask|ExposureMask|SubstructureNotifyMask,
     };
+    Colormap colormap = DefaultColormap(display, screen_num);
 
     Window window = XCreateWindow(display, root, 0, 0, 400, 300, 5, 
                         depth, class, visual, valuemask, &attributes);
 
-    font_setup(display);
-    char *l = "SAI ZON ZEE";
-    create_button(display,&window,screen_num,font_info,context,0,0,100,20,0x776677,0xbbbbbb,l,strlen(l));
+    XftDraw *draw = XftDrawCreate(display, window, visual, colormap);
 
-    create_button(display,&window,screen_num,font_info,context,0,25,100,20,0x333333,0xbbbbbb,l,strlen(l));
+    /* font_setup(display); */
+    xftfont_setup(display,screen_num);
+    char *l = "SAI ZON ZEE";
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,0,100,20,&colormap,0x776677,0xbbbbbb,"#000000",l,strlen(l));
+
+    /* create_button(display,&window,screen_num,font_info,context,xftfont,draw,0,25,100,20,&colormap,0x333333,0xbbbbbb,"#000000",l,strlen(l)); */
 
     XMapWindow(display,window);
     XSync(display,false);
@@ -74,5 +90,5 @@ int main(void)
         if(event.xkey.keycode == 9) break;
     }
 
-    return(0);
+    return(EXIT_SUCCESS);
 }

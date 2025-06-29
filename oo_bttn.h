@@ -12,7 +12,9 @@ static long def_eventmask =
 
 typedef struct {
     Window win;
-    GC gc;
+    XftDraw *draw;
+    XftColor *color;
+    XftFont *xftfont;
     int background;
     int border;
     int width;
@@ -23,7 +25,7 @@ typedef struct {
     size_t label_len;
 } oo_button;
 
-void create_button(Display*,Window*,int,XFontStruct*,XContext,int,int,int,int,int,int,char*,size_t);
+void create_button(Display*,Window*,int,XFontStruct*,XContext,XftFont*,int,int,int,int,Colormap*,int,int,char*,char*,size_t);
 void expose_button(oo_button*,XEvent*);
 void config_button(oo_button*,XEvent*);
 void enter_button(oo_button*,XEvent*);
@@ -36,9 +38,10 @@ void leave_button(oo_button*,XEvent*);
 // oo_button 
 void
 create_button(Display *display, Window *parent, int screen_num, 
-              XFontStruct *font, XContext context, int x, int y,
-              int width, int height, int border, int background,
-              char *label, size_t label_len)
+              XFontStruct *font, XContext context, XftFont *xftfont, 
+              int x, int y, int width, int height, 
+              Colormap *colormap, int border, int background, 
+              char *foreground, char *label, size_t label_len)
 {
     int depth = DefaultDepth(display,screen_num);
     int class = InputOutput;
@@ -53,21 +56,40 @@ create_button(Display *display, Window *parent, int screen_num,
     Window subwin = XCreateWindow(display,*parent,x,y,width,height,2, depth,
                                   class,visual,valuemask,&attributes);
 
-    int valuemask_gc = GCForeground;
-    XGCValues xgcvalues = {
-        .foreground = 0x000000,
-    };
-    GC subwin_gc = XCreateGC(display,subwin,valuemask_gc,&xgcvalues);
+    XftDraw *draw = XftDrawCreate(display, subwin, visual, *colormap);
+    // int valuemask_gc = GCForeground;
+    // XGCValues xgcvalues = {
+    //     .foreground = 0x000000,
+    // };
+    // GC subwin_gc = XCreateGC(display,subwin,valuemask_gc,&xgcvalues);
     // XSetFont(display,DefaultGC(display,screen_num),font->fid);
+    if(!colormap){
+        perror("Colormap NULL\n");
+        exit(EXIT_FAILURE);
+    }
+    printf("%p\n",colormap);
+    printf("before %s\n",foreground);
+    XftColor color;
+
+    XftColorAllocName(display,visual,*colormap,foreground,&color);
+
+    // if(!color){
+    //     perror("color NULL\n");
+    //     exit(EXIT_FAILURE);
+    // }
+    printf("here\n");
 
     oo_button *button = malloc(sizeof(oo_button)); 
 
+    button->draw = draw;
+    button->color = &color;
+    button->xftfont = xftfont;
     button->background = background;
     button->border = border;
     button->width = width;
     button->height = height;
-    button->x = (width/2)-((font->per_char->width * label_len)/2);
-    button->y = (font->ascent+font->descent);
+    button->x = (width/2)-((xftfont->max_advance_width * label_len)/2);
+    button->y = (xftfont->ascent+xftfont->descent);
     button->label_len = label_len;
     button->label = malloc(label_len+1);
     button->label = label;
@@ -78,9 +100,11 @@ create_button(Display *display, Window *parent, int screen_num,
 
 void expose_button(oo_button *button, XEvent *event)
 {
-    XDrawString(event->xany.display, event->xany.window,
-                DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
-                button->x, button->y, button->label, button->label_len);
+    // XDrawString(event->xany.display, event->xany.window,
+    //             DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
+    //             button->x, button->y, button->label, button->label_len);
+    XftDrawStringUtf8(button->draw,button->color,button->xftfont,
+                      button->x, button->y, (FcChar8*)button->label, button->label_len);
 }
 
 void config_button(oo_button *button, XEvent *event)
