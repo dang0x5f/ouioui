@@ -60,9 +60,12 @@ int main(void)
     /* font_setup(display); */
     xftfont_setup(display,screen_num);
     char *l = "SAI ZON ZEE";
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,0,100,20,&colormap,0x776677,0xbbbbbb,"#000000",l,strlen(l));
-
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,25,100,20,&colormap,0x333333,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,0,100,20,&colormap,  0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,25,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,50,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,75,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,100,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,125,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l));
 
     XMapWindow(display,window);
     XSync(display,false);
