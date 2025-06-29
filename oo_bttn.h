@@ -53,6 +53,11 @@ create_button(Display *display, Window *parent, int screen_num,
     Window subwin = XCreateWindow(display,*parent,x,y,width,height,2, depth,
                                   class,visual,valuemask,&attributes);
 
+    int valuemask_gc = GCForeground;
+    XGCValues xgcvalues = {
+        .foreground = 0x000000,
+    };
+    GC subwin_gc = XCreateGC(display,subwin,valuemask_gc,&xgcvalues);
     // XSetFont(display,DefaultGC(display,screen_num),font->fid);
 
     oo_button *button = malloc(sizeof(oo_button)); 
@@ -88,6 +93,9 @@ void enter_button(oo_button *button, XEvent *event)
     XSetWindowAttributes attributes;
     attributes.background_pixel = button->border;
     attributes.border_pixel = button->background;
+    XSetForeground(event->xany.display, 
+            DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
+            0xfffdd0);
     XChangeWindowAttributes(event->xany.display, event->xany.window,
                             CWBackPixel|CWBorderPixel, &attributes);
     XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
@@ -99,6 +107,9 @@ void leave_button(oo_button *button, XEvent *event)
     XSetWindowAttributes attributes;
     attributes.background_pixel = button->background;
     attributes.border_pixel = button->border;
+    XSetForeground(event->xany.display, 
+            DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
+            0x000000);
     XChangeWindowAttributes(event->xany.display, event->xany.window,
                             CWBackPixel|CWBorderPixel, &attributes);
     XClearArea(event->xany.display, event->xany.window, 0,0, button->width,
