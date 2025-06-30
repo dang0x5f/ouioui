@@ -33,6 +33,11 @@ void xftfont_setup(Display *display, int screen_num)
     }
 }
 
+void prt_hello(void *cbdata)
+{
+    printf("Hello\n");
+}
+
 int main(void)
 {
     /* XrmInitialize(); */
@@ -56,17 +61,15 @@ int main(void)
     Window window = XCreateWindow(display, root, 0, 0, 400, 300, 5, 
                         depth, class, visual, valuemask, &attributes);
 
-    /* XftDraw *draw = XftDrawCreate(display, window, visual, colormap); */
-
     /* font_setup(display); */
     xftfont_setup(display,screen_num);
     char *l = "SAI ZON ZEE";
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,0,100,20,&colormap,  0x888888,0xbbbbbb,"#000000",l,strlen(l));
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,25,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,50,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,75,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l));
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,100,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l));
-    create_button(display,&window,screen_num,font_info,context,xftfont,0,125,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l));
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,0,100,20,&colormap,  0x888888,0xbbbbbb,"#000000",l,strlen(l),prt_hello);
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,25,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l),NULL);
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,50,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l),NULL);
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,75,100,20,&colormap, 0x888888,0xbbbbbb,"#000000",l,strlen(l),NULL);
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,100,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l),NULL);
+    create_button(display,&window,screen_num,font_info,context,xftfont,0,125,100,20,&colormap,0x888888,0xbbbbbb,"#000000",l,strlen(l),NULL);
 
     XMapWindow(display,window);
     XSync(display,false);
@@ -89,6 +92,9 @@ int main(void)
                 break;
             case LeaveNotify:
                 if(button) leave_button(button,&event);
+                break;
+            case ButtonRelease:
+                if(button) button->buttonRelease(button->cbdata);
                 break;
         }
         if(event.xkey.keycode == 9) break;
