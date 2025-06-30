@@ -37,6 +37,20 @@ void leave_button(oo_button*,XEvent*);
 
 #ifdef OO_BTTN_IMPLEMENTATION
 
+char invert_hex_char(char c)
+{
+    int n = 15-((c>='A'?c-'A'+10:c-'0') & 0xF);
+    return(n>=10?'A'+(n-10):'0'+n);
+}
+
+void invert_color(char *in, char *out)
+{
+    size_t sz = 7;
+    out[0]='#';
+    for(int i=1; i<sz; ++i)
+        out[i] = invert_hex_char(in[i]);
+}
+
 // oo_button 
 void
 create_button(Display *display, Window *parent, int screen_num, 
@@ -59,27 +73,20 @@ create_button(Display *display, Window *parent, int screen_num,
                                   class,visual,valuemask,&attributes);
 
     XftDraw *draw = XftDrawCreate(display, subwin, visual, *colormap);
-    // int valuemask_gc = GCForeground;
-    // XGCValues xgcvalues = {
-    //     .foreground = 0x000000,
-    // };
-    // GC subwin_gc = XCreateGC(display,subwin,valuemask_gc,&xgcvalues);
-    // XSetFont(display,DefaultGC(display,screen_num),font->fid);
-    XftColor color;
-
-    if(!colormap){
-        perror("Colormap NULL\n");
-        exit(EXIT_FAILURE);
-    }
 
     oo_button *button = malloc(sizeof(oo_button)); 
 
-    button->draw = draw;
+    XftColor color;
     XftColorAllocName(display,visual,*colormap,foreground,&color);
     button->foreground = color;
     button->fg = color;
-    XftColorAllocName(display,visual,*colormap,"#fffdd0",&color);
+
+    char inverted[8]={'\0'};
+    invert_color(foreground,inverted);
+    XftColorAllocName(display,visual,*colormap,inverted,&color);
     button->inverted_fg = color;
+
+    button->draw = draw;
     button->xftfont = xftfont;
     button->background = background;
     button->border = border;
@@ -114,9 +121,6 @@ void enter_button(oo_button *button, XEvent *event)
     XSetWindowAttributes attributes;
     attributes.background_pixel = button->border;
     attributes.border_pixel = button->background;
-    // XSetForeground(event->xany.display, 
-    //         DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
-    //         0xfffdd0);
     (button->foreground) = (button->inverted_fg);
     XChangeWindowAttributes(event->xany.display, event->xany.window,
                             CWBackPixel|CWBorderPixel, &attributes);
@@ -129,9 +133,6 @@ void leave_button(oo_button *button, XEvent *event)
     XSetWindowAttributes attributes;
     attributes.background_pixel = button->background;
     attributes.border_pixel = button->border;
-    // XSetForeground(event->xany.display, 
-    //         DefaultGC(event->xany.display, DefaultScreen(event->xany.display)),
-    //         0x000000);
     (button->foreground) = (button->fg);
     XChangeWindowAttributes(event->xany.display, event->xany.window,
                             CWBackPixel|CWBorderPixel, &attributes);
