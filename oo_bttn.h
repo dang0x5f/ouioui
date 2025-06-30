@@ -67,6 +67,19 @@ void invert_color(char *in, char *out)
         out[i] = invert_hex_char(in[i]);
 }
 
+bool isvalid_color(char *hex)
+{
+    bool valid = true;
+    for(int i=1; i<7; ++i){
+        if( !(hex[i] >= 'A' && hex[i] <= 'F') && 
+            !(hex[i] >= '0' && hex[i] <= '9') ){
+            valid = false;
+            break;
+        }
+    }
+    return(valid);
+}
+
 // oo_button 
 void
 create_button(Display *display, Window *parent, int screen_num, 
@@ -95,7 +108,7 @@ create_button(Display *display, Window *parent, int screen_num,
     XftColor color;
     // TODO: validate foreground
     //  - upper vs lower 
-    //  - ( (c >= A && c <= F) || (c >= 0 && c <= 9) )
+    if(!isvalid_color(foreground)) foreground = "#AA0FC0";
     XftColorAllocName(display,visual,*colormap,foreground,&color);
     button->foreground = color;
     button->fg = color;
