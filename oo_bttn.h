@@ -72,6 +72,7 @@ bool isvalid_color(char *hex)
     bool valid = true;
     for(int i=1; i<7; ++i){
         if( !(hex[i] >= 'A' && hex[i] <= 'F') && 
+            !(hex[i] >= 'a' && hex[i] <= 'f') &&
             !(hex[i] >= '0' && hex[i] <= '9') ){
             valid = false;
             break;
@@ -107,7 +108,6 @@ create_button(Display *display, Window *parent, int screen_num,
 
     XftColor color;
     // TODO: validate foreground
-    //  - upper vs lower 
     if(!isvalid_color(foreground)) foreground = "#AA0FC0";
     XftColorAllocName(display,visual,*colormap,foreground,&color);
     button->foreground = color;
