@@ -37,7 +37,7 @@ typedef struct {
     Callback buttonRelease;
 } oo_button;
 
-void create_button(Display*,Window*,int,XFontStruct*,XContext,XftFont*,int,int,int,int,Colormap*,int,int,char*,char*,size_t,Callback);
+void create_button(Display*,Window*,int,XFontStruct*,XContext,XftFont*,int,int,int,Colormap*,int,int,char*,char*,size_t,Callback);
 void expose_button(oo_button*,XEvent*);
 void config_button(oo_button*,XEvent*);
 void enter_button(oo_button*,XEvent*);
@@ -85,8 +85,8 @@ bool isvalid_color(char *hex)
 void
 create_button(Display *display, Window *parent, int screen_num, 
               XFontStruct *font, XContext context, XftFont *xftfont, 
-              int x, int y, int width, int height, Colormap *colormap, 
-              int border, int background, char *foreground, char *label, 
+              int x, int y, int width, Colormap *colormap, int border, 
+              int background, char *foreground, char *label, 
               size_t label_len, Callback cb_func)
 {
     int depth = DefaultDepth(display,screen_num);
@@ -98,6 +98,8 @@ create_button(Display *display, Window *parent, int screen_num,
         .border_pixel = border,
         .event_mask = def_eventmask,
     };
+    int padding = 60;
+    int height = (xftfont->height+xftfont->descent+padding);
 
     Window subwin = XCreateWindow(display,*parent,x,y,width,height,2, depth,
                                   class,visual,valuemask,&attributes);
@@ -107,7 +109,6 @@ create_button(Display *display, Window *parent, int screen_num,
     oo_button *button = malloc(sizeof(oo_button)); 
 
     XftColor color;
-    // TODO: validate foreground
     if(!isvalid_color(foreground)) foreground = "#AA0FC0";
     XftColorAllocName(display,visual,*colormap,foreground,&color);
     button->foreground = color;
@@ -125,7 +126,7 @@ create_button(Display *display, Window *parent, int screen_num,
     button->width = width;
     button->height = height;
     button->x = (width/2)-((xftfont->max_advance_width * label_len)/2);
-    button->y = (xftfont->ascent+xftfont->descent);
+    button->y = xftfont->height+(padding/2);//(xftfont->ascent+xftfont->descent);
     button->label_len = label_len;
     button->label = malloc(label_len+1);
     button->label = label;
